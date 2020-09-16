@@ -11,12 +11,10 @@ import os
 def decode(im) : 
   # Find barcodes and QR codes
   decodedObjects = pyzbar.decode(im)
-
   # Print results
   for obj in decodedObjects:
     print('Type : ', obj.type)
-    print('Data : ', obj.data,'\n')
-    
+    print('Data : ', obj.data,'\n')  
   return decodedObjects
 
 def imageCapture():
@@ -30,9 +28,10 @@ def imageCapture():
     #store image
     camera.capture('demo.jpg')
     camera.stop_preview()
-
+#
 def tesseractAnalysis():
     print(pytesseract.image_to_string(Image.open("demo.jpg"), lang="eng"))
+    
 # Main 
 if __name__ == '__main__':
     
