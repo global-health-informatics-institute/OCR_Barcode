@@ -33,7 +33,8 @@ def do_picam(app):
     #camera.awb_mode = 'auto'
     camera.brightness = 50
     #camera.rotation= 90
-    camera.resolution = (1024, 400) 
+    camera.resolution = (2592,1944)
+    camera.zoom = (0.0,0.0,1.0,0.5)  
     camera.capture(bilder)
     camera.stop_preview()
     camera.close() # close Picamera to free resources  to restart the video stream
@@ -68,7 +69,7 @@ class Application:
         self.panel = tk.Label(self.root,width= 800, height=250)  # initialize image panel
         self.panel.grid(row=0,rowspan=10,columnspan = 25,column=0,padx=0, pady=20)
         
-        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE ID", activebackground="light blue",bg = "cyan")
+        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE", activebackground="light blue",bg = "cyan")
         self.botShoot.grid(row=12, column=18,pady=20)
         self.botShoot.configure(command=self.picam)        
 
@@ -116,13 +117,13 @@ class Application:
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
         
-        # Find barcodes and QR codes
+        # Find barcode and Decode
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
-        # Print results on Window (Text)
-        get_barcode = ""
-        to_display_data = ""
-        #for obj in decodedObjects:        
-            #get_barcode = obj.data   
+        get_id = ""
+        for obj in decodedObjects:        
+            get_id = obj.data
+        print(get_id)
+        #Extracring OCR Data
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
         ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
         #print(ocr_text_split[0])
