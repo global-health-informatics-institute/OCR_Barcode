@@ -32,9 +32,10 @@ def do_picam(app):
     camera = picamera.PiCamera()
     camera.brightness = 50
     camera.resolution = (2592,1944)
-    camera.zoom = (0.0,0.0,2.1,0.55) #crop image to take label only  
+    camera.color_effects = (128,128) #Turn camera to black and white
+    #camera.crop = (0.0,0.0,2.1,0.52) #crop image to take label only  
     camera.capture(bilder)
-    os.system("convert -density 300 /home/pi/Documents/demo.jpg /home/pi/Documents/demo.jpg")
+    os.system("convert -density 360 /home/pi/Documents/demo.jpg /home/pi/Documents/demo.jpg")
     camera.stop_preview()
     camera.close() # close Picamera to free resources  to restart the video stream
     shot = bilder
