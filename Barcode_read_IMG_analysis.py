@@ -128,10 +128,10 @@ class Application:
         #print(last_value_ocr_text_splitted[0])
         to_display_data = ocr_text_split[0] + ", " + last_value_ocr_text_splitted[0]
         print(to_display_data)
-        #ocr_text_tkinter = tk.StringVar()
-        #ocr_text_tkinter.set(ocr_text)    
-        #self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('calibri', 12, 'normal'),height = 6, width = 45,bg="light cyan")
-        #self.Output.grid(row=12,column=4,pady=12)
+        ocr_text_tkinter = tk.StringVar()
+        ocr_text_tkinter.set(to_display_data)    
+        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 16, 'normal'),height = 6, width = 40,bg="light cyan")
+        self.Output.grid(row=12,column=4,pady=12)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-o", "--output", default="./Pictures",
