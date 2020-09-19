@@ -31,9 +31,9 @@ def do_picam(app):
     global txt_display
     camera = picamera.PiCamera()
     #camera.awb_mode = 'auto'
-    camera.brightness = 60
+    camera.brightness = 50
     #camera.rotation= 90
-    camera.resolution = (2592, 1944) 
+    camera.resolution = (1024, 400) 
     camera.capture(bilder)
     camera.stop_preview()
     camera.close() # close Picamera to free resources  to restart the video stream
@@ -99,14 +99,7 @@ class Application:
         self.vs.release() # release the camera to get all resources
         t = threading.Thread(target=do_picam, args=(self,))
         t.start()
-        
-    def show_thumb(self) :
-        image = Image.open(bilder)          
-        image = image.resize((252,195),Image.ANTIALIAS)
-        photo = ImageTk.PhotoImage(image)       
-        self.labPic.configure(image=photo)
-        self.labPic.image=photo
-        self.root.update_idletasks()                     
+                           
     def enable_buttons(self):
         self.botShoot.configure(state="normal")
         self.botQuit.configure(state="normal")
@@ -124,17 +117,21 @@ class Application:
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
         # Print results on Window (Text)
         get_barcode = ""
-        results = ""
-        for obj in decodedObjects:        
-            get_barcode = obj.data
-            
-        results = get_barcode    
-        #ocr_str = pytesseract.image_to_string(Image.open(bilder), lang="eng")
-        print(pytesseract.image_to_string(Image.open(bilder), lang="eng"))
-        ocr_barcode = tk.StringVar()
-        ocr_barcode.set(results)    
-        self.Output = tk.Label(self.root,textvariable = ocr_barcode,font=('calibri', 12, 'normal'),height = 6, width = 45,bg="light cyan")
-        self.Output.grid(row=12,column=4,pady=12)
+        to_display_data = ""
+        #for obj in decodedObjects:        
+            #get_barcode = obj.data   
+        ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
+        ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
+        #print(ocr_text_split[0])
+        last_value_ocr_text_split = ocr_text_split[1]
+        last_value_ocr_text_splitted = last_value_ocr_text_split.splitlines() 
+        #print(last_value_ocr_text_splitted[0])
+        to_display_data = ocr_text_split[0] + ", " + last_value_ocr_text_splitted[0]
+        print(to_display_data)
+        #ocr_text_tkinter = tk.StringVar()
+        #ocr_text_tkinter.set(ocr_text)    
+        #self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('calibri', 12, 'normal'),height = 6, width = 45,bg="light cyan")
+        #self.Output.grid(row=12,column=4,pady=12)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-o", "--output", default="./Pictures",
