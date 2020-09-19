@@ -30,10 +30,11 @@ def do_picam(app):
     global delete_flag
     global txt_display
     camera = picamera.PiCamera()
-    camera.brightness = 55
+    camera.brightness = 50
     camera.resolution = (2592,1944)
-    camera.zoom = (0.0,0.0,2.1,0.5) #crop image to take label only  
+    camera.zoom = (0.0,0.0,2.1,0.55) #crop image to take label only  
     camera.capture(bilder)
+    os.system("convert -density 300 /home/pi/Documents/demo.jpg /home/pi/Documents/demo.jpg")
     camera.stop_preview()
     camera.close() # close Picamera to free resources  to restart the video stream
     shot = bilder
@@ -59,9 +60,7 @@ class Application:
         hs = self.root .winfo_screenheight() # height of the screen
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
-        self.root .geometry('%dx%d+%d+%d' % (w, h, x, y))
-        self.root.title("    SCAN HEALTH PASSPORT     ")  # set window title
-        self.root.protocol('WM_DELETE_WINDOW', self.destructor)
+        self.root .geometry('%dx%d+%d+%d' % (w, h, x, y))      
         
         self.panel = tk.Label(self.root,width= 800, height=250)  # initialize image panel
         self.panel.grid(row=0,rowspan=10,columnspan = 25,column=0,padx=0, pady=20)
