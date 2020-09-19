@@ -68,13 +68,16 @@ class Application:
         self.panel = tk.Label(self.root,width= 800, height=250)  # initialize image panel
         self.panel.grid(row=0,rowspan=10,columnspan = 25,column=0,padx=0, pady=20)
         
-        self.botShoot = tk.Button(self.root,width=20,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE ID", activebackground="green" )
-        self.botShoot.grid(row=12, column=20,pady=6)
+        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE ID", activebackground="blue" )
+        self.botShoot.grid(row=12, column=18)
         self.botShoot.configure(command=self.picam)        
 
-        self.botQuit = tk.Button(self.root,width=20,height=4,bd=4,font=('arial', 14, 'bold'), text="CLOSE", activebackground="red")
-        self.botQuit.grid(row=14,column=20,pady=5)
-        self.botQuit.configure(command=self.destructor)      
+        self.botQuit = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="blue")
+        self.botQuit.grid(row=13,column=18)
+        self.botQuit.configure(command=self.destructor)
+        
+        self.Output = tk.Label(self.root,text = "this new",font=('arial', 18, 'normal'),height = 10, width = 45,bg="light cyan")
+        self.Output.grid(row=12,column=4,rowspan=10)
         self.video_loop()
         
     def video_loop(self):
