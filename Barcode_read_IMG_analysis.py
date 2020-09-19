@@ -30,11 +30,9 @@ def do_picam(app):
     global delete_flag
     global txt_display
     camera = picamera.PiCamera()
-    #camera.awb_mode = 'auto'
-    camera.brightness = 50
-    #camera.rotation= 90
+    camera.brightness = 55
     camera.resolution = (2592,1944)
-    camera.zoom = (0.0,0.0,1.0,0.5)  
+    camera.zoom = (0.0,0.0,2.1,0.5) #crop image to take label only  
     camera.capture(bilder)
     camera.stop_preview()
     camera.close() # close Picamera to free resources  to restart the video stream
@@ -43,7 +41,6 @@ def do_picam(app):
     delete_flag = 1
     app.vs.open(0) # restarting video stream from Pi Camera
     txt_display = " " + shot[0:18]
-    
       
 class Application:
     def __init__(self, output_path = "./"):
@@ -72,12 +69,13 @@ class Application:
         self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE", activebackground="light blue",bg = "cyan")
         self.botShoot.grid(row=12, column=18,pady=20)
         self.botShoot.configure(command=self.picam)        
-
+        
+        #!!Button to be changed to save function soon
         self.botQuit = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
         self.botQuit.grid(row=13,column=18)
         self.botQuit.configure(command=self.destructor)
         
-        self.Output = tk.Label(self.root,text = "Insert Health Passport",font=('arial', 18, 'normal'),height = 10, width = 45,bg="light cyan")
+        self.Output = tk.Label(self.root,text = "Insert Health Passport",font=('arial', 25, 'normal'),height = 7, width = 30,bg="light cyan")
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
         self.video_loop()
         
@@ -112,8 +110,7 @@ class Application:
         self.root.destroy()
         self.vs.release()  # release pi camera
         cv2.destroyAllWindows()  # it is not mandatory in this application
-    
-          
+           
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
         
@@ -134,7 +131,7 @@ class Application:
         print(to_display_data)
         ocr_text_tkinter = tk.StringVar()
         ocr_text_tkinter.set(to_display_data)    
-        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 18, 'normal'),height = 6, width = 40,bg="light cyan")
+        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'),height = 7, width = 30,bg="light cyan", justify='left')
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
