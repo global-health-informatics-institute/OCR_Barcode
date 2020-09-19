@@ -68,16 +68,16 @@ class Application:
         self.panel = tk.Label(self.root,width= 800, height=250)  # initialize image panel
         self.panel.grid(row=0,rowspan=10,columnspan = 25,column=0,padx=0, pady=20)
         
-        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE ID", activebackground="blue" )
-        self.botShoot.grid(row=12, column=18)
+        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE ID", activebackground="light blue",bg = "cyan")
+        self.botShoot.grid(row=12, column=18,pady=20)
         self.botShoot.configure(command=self.picam)        
 
-        self.botQuit = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="blue")
+        self.botQuit = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
         self.botQuit.grid(row=13,column=18)
         self.botQuit.configure(command=self.destructor)
         
-        self.Output = tk.Label(self.root,text = "this new",font=('arial', 18, 'normal'),height = 10, width = 45,bg="light cyan")
-        self.Output.grid(row=12,column=4,rowspan=10)
+        self.Output = tk.Label(self.root,text = "Insert Health Passport",font=('arial', 18, 'normal'),height = 10, width = 45,bg="light cyan")
+        self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
         self.video_loop()
         
     def video_loop(self):
@@ -133,8 +133,8 @@ class Application:
         print(to_display_data)
         ocr_text_tkinter = tk.StringVar()
         ocr_text_tkinter.set(to_display_data)    
-        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 16, 'normal'),height = 6, width = 40,bg="light cyan")
-        self.Output.grid(row=12,column=4,pady=12)
+        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 18, 'normal'),height = 6, width = 40,bg="light cyan")
+        self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-o", "--output", default="./Pictures",
