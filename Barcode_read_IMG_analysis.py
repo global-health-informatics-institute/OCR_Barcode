@@ -31,7 +31,7 @@ def do_picam(app):
     global txt_display
     camera = picamera.PiCamera()
     camera.brightness = 50
-    camera.resolution = (2592,1012)
+    camera.resolution = (1296,506) #This resolution works better for barcode decoding
     camera.color_effects = (128,128) #Turn camera to black and white
     #camera.crop = (0.0,0.0,3.1,0.53) #crop image to take label only  
     camera.capture(bilder)
@@ -117,48 +117,62 @@ class Application:
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
         
+        validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
+        verified_id = ""
         # Find barcode and Decode
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
-        validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
-        get_id = ""
-        strip_get_id = ""
-        for obj in decodedObjects:        
-            get_id = obj.data
-        #print(get_id)
-        #strip_get_id = get_id.strip("b")
-        #print(strip_get_id)
+        for obj in decodedObjects:
+            get_id = str(obj.data)
+        split_get_id = get_id.split("'")
+        id_only = split_get_id[1]
+        #print(id_only)
         #Extracring OCR Data
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
         #print(ocr_text)
         ocr_text_split = ocr_text.split(", ",1) #splitting text with coMonthOfBirtha into two values array
-        #print(ocr_text_split[0])
+        print(ocr_text_split)
         ocr_text_splitted = ocr_text_split[0].split("\n")
-        #print(ocr_text_splitted[1])
+        print(ocr_text_splitted)
+        full_name = ocr_text_splitted[0] #get the full name from first line
+        split_full_name = full_name.split(" ")
+        first_name = split_full_name[0]
+        last_name = split_full_name[1]
+        print(first_name + " " +last_name)
+        
         take_date = ocr_text_splitted[1].split(" ")
-        #print(take_date[1])
+        get_id_ocr = take_date[0].replace("-","") #Getting id from OCR to later compare with one from barcode 
+        #checking barcode id and OCR id
+        if get_id_ocr == id_only:
+            print("OCR is Okay ")
+            verified_id = take_date[0]
+            print(verified_id)
+        else:
+            print("OCR is Poor")
+            
+        #Processing Date Validation   
         date_taken = take_date[1].split("/")
         DayOfBirth = date_taken[0] #Extract Day from date
         MonthOfBirth = date_taken[1] #Extract Month from date
+        print(date_taken)
         take_year = date_taken[2].split("(")
-        YearOfBirth = take_year[0] #Extract Year from date
-        
+        YearOfBirth = take_year[0] #Extract Year from date        
         # Validating the Year Captured from OCR
         if "?" in YearOfBirth:
-            print("??")
+            YearOfBirth = "????"
+            print(YearOfBirth)        
         else:
             YearOfBirth = int(YearOfBirth)
             if YearOfBirth < 1920 or YearOfBirth > 2025:
-                YearOfBirth = '????'
-            print(YearOfBirth)
-            
+                YearOfBirth = "????"
+                print(YearOfBirth)         
         # Validating the Month Captured from OCR
         if MonthOfBirth.upper() not in validMonths:
-           MonthOfBirth = '???'
-        print(MonthOfBirth)
-        
+           MonthOfBirth = "???"
+        print(MonthOfBirth)     
         # Validating the Day Captured from OCR
         if "?" in DayOfBirth:
-            print("??")
+            DayOfBirth = "??"
+            print(DayOfBirth)
         else :
             DayOfBirth = int (DayOfBirth)
             if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
@@ -170,7 +184,22 @@ class Application:
             else:
                 maxDay=28
             if(DayOfBirth<1 or DayOfBirth>maxDay):
-                print("??")
+                DayOfBirth = "??"
+                print(DayOfBirth)
+                
+        #processing Gender
+        gender = take_year[1].rstrip(")")
+        print(gender)
+        #Start coding from here !!!
+        # Process District 
+        home = ocr_text_splitted[2]
+        #district = home[0]
+        print(home)
+        
+        #Process village
+        home_village  = ocr_text_split[1].split("\n")
+        village = home_village[0]
+        print(village)
         
         last_value_ocr_text_split = ocr_text_split[1]
         last_value_ocr_text_splitted = last_value_ocr_text_split.splitlines() 
