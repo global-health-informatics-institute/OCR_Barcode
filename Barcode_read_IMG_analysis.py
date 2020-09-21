@@ -31,9 +31,9 @@ def do_picam(app):
     global txt_display
     camera = picamera.PiCamera()
     camera.brightness = 50
-    camera.resolution = (2592,1944)
+    camera.resolution = (2592,1012)
     camera.color_effects = (128,128) #Turn camera to black and white
-    #camera.crop = (0.0,0.0,2.1,0.52) #crop image to take label only  
+    #camera.crop = (0.0,0.0,3.1,0.53) #crop image to take label only  
     camera.capture(bilder)
     os.system("convert -density 360 /home/pi/Documents/demo.jpg /home/pi/Documents/demo.jpg")
     camera.stop_preview()
@@ -41,7 +41,7 @@ def do_picam(app):
     shot = bilder
     app.tesseractAnalysis()
     delete_flag = 1
-    app.vs.open(0) # restarting video stream from Pi Camera
+    #app.vs.open(0) # restarting video stream from Pi Camera
     txt_display = " " + shot[0:18]
       
 class Application:
@@ -49,6 +49,9 @@ class Application:
         """ Initialize application which uses OpenCV + Tkinter. It displays
             a video stream in a Tkinter window and stores current snapshot on disk """
         self.vs = cv2.VideoCapture(0) # capture video frames, 0 is your default video camera
+        #Setting the live screen frame
+        self.vs.set(cv2.CAP_PROP_FRAME_WIDTH,640)
+        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,250)
         self.output_path = output_path  # store output path
         self.current_image = None  # current image from the camera
         self.root = tk.Tk()  # initialize root window
@@ -131,7 +134,7 @@ class Application:
         print(to_display_data)
         ocr_text_tkinter = tk.StringVar()
         ocr_text_tkinter.set(to_display_data)    
-        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'),height = 7, width = 30,bg="light cyan", justify='left')
+        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'), bg="light cyan", justify='left')
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
