@@ -119,14 +119,34 @@ class Application:
         
         # Find barcode and Decode
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
+        validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
         get_id = ""
+        strip_get_id = ""
         for obj in decodedObjects:        
             get_id = obj.data
-        print(get_id)
+        #print(get_id)
+        #strip_get_id = get_id.strip("b")
+        #print(strip_get_id)
         #Extracring OCR Data
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
         ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
         #print(ocr_text_split[0])
+        ocr_text_splitted = ocr_text_split[0].split("\n")
+        #print(ocr_text_splitted[1])
+        take_date = ocr_text_splitted[1].split(" ")
+        #print(take_date[1])
+        take_month = take_date[1].split("/")
+        MonthOfBirth = take_month[1]
+        take_year = take_month[2].split("(")
+        YearOfBirth = int(take_year[0])
+        if YearOfBirth < 1920 or YearOfBirth > 2025:
+            YearOfBirth = '????'
+        print(YearOfBirth)
+        # Validating the Month Captured from OCR
+        if MonthOfBirth.upper() not in validMonths:
+           MonthOfBirth = '???'
+        print(MonthOfBirth)
+        
         last_value_ocr_text_split = ocr_text_split[1]
         last_value_ocr_text_splitted = last_value_ocr_text_split.splitlines() 
         #print(last_value_ocr_text_splitted[0])
