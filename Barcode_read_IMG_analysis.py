@@ -129,16 +129,21 @@ class Application:
         #print(strip_get_id)
         #Extracring OCR Data
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
-        ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
+        print(ocr_text)
+        ocr_text_split = ocr_text.split(", ",1) #splitting text with coMonthOfBirtha into two values array
         #print(ocr_text_split[0])
         ocr_text_splitted = ocr_text_split[0].split("\n")
-        #print(ocr_text_splitted[1])
+        print(ocr_text_splitted[1])
         take_date = ocr_text_splitted[1].split(" ")
         #print(take_date[1])
-        take_month = take_date[1].split("/")
-        MonthOfBirth = take_month[1]
-        take_year = take_month[2].split("(")
-        YearOfBirth = int(take_year[0])
+        date_taken = take_date[1].split("/")
+        print(date_taken)
+        #DayOfBirth = int(date_taken[0]) #Extract Day from date
+        MonthOfBirth = date_taken[1] #Extract Month from date
+        take_year = date_taken[2].split("(")
+        YearOfBirth = int(take_year[0]) #Extract Year from date
+        
+        # Validating the Year Captured from OCR
         if YearOfBirth < 1920 or YearOfBirth > 2025:
             YearOfBirth = '????'
         print(YearOfBirth)
@@ -146,6 +151,21 @@ class Application:
         if MonthOfBirth.upper() not in validMonths:
            MonthOfBirth = '???'
         print(MonthOfBirth)
+        # Validating the Day Captured from OCR
+        if "?" in DayOfBirth:
+            print("yes")
+        else :
+            print("no")
+        if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
+            maxDay=31
+        elif(MonthOfBirth==4 or MonthOfBirth==6 or MonthOfBirth==9 or MonthOfBirth==11):
+            maxDay=30
+        elif(YearOfBirth%4==0 and YearOfBirth%100!=0 or YearOfBirth%400==0):
+            maxDay=29
+        else:
+            maxDay=28
+        if(DayOfBirth<1 or DayOfBirth>maxDay):
+            print("??")
         
         last_value_ocr_text_split = ocr_text_split[1]
         last_value_ocr_text_splitted = last_value_ocr_text_split.splitlines() 
