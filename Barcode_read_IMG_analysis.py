@@ -192,19 +192,16 @@ class Application:
         print(gender)
         #Start coding from here !!!
         # Process District 
-        home = ocr_text_splitted[2]
-        #district = home[0]
-        print(home)
+        district = ocr_text_splitted[2]
+        print(district)
         
         #Process village
         home_village  = ocr_text_split[1].split("\n")
         village = home_village[0]
         print(village)
         
-        last_value_ocr_text_split = ocr_text_split[1]
-        last_value_ocr_text_splitted = last_value_ocr_text_split.splitlines() 
-        #print(last_value_ocr_text_splitted[0])
-        to_display_data = ocr_text_split[0] + ", " + last_value_ocr_text_splitted[0]
+        #Data to display on user Interface
+        to_display_data = first_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + district + ", " + village
         print(to_display_data)
         ocr_text_tkinter = tk.StringVar()
         ocr_text_tkinter.set(to_display_data)    
