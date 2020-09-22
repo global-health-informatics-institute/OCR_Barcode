@@ -48,10 +48,9 @@ def do_picam(app):
     camera.close() # close Picamera to free resources  to restart the video stream
     shot = bilder
     app.tesseractAnalysis()
+    app.video_loop()
     delete_flag = 1
-    #app.vs.open(0) # restarting video stream from Pi Camera
-    txt_display = " " + shot[0:18]
-      
+
 class Application:
     def __init__(self, output_path = "./"):
         """ Initialize application which uses OpenCV + Tkinter. It displays
@@ -81,11 +80,6 @@ class Application:
         self.botShoot.grid(row=12, column=18,pady=20)
         self.botShoot.configure(command=self.picam)        
         
-        #!!Button to be changed to save function soon
-        self.botQuit = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
-        self.botQuit.grid(row=13,column=18)
-        self.botQuit.configure(command=self.save_process)
-        
         self.Output = tk.Label(self.root,text = "Insert Health Passport",font=('arial', 25, 'normal'),height = 7, width = 30,bg="light cyan")
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
         self.video_loop()
@@ -101,9 +95,8 @@ class Application:
             imgtk = ImageTk.PhotoImage(image=self.current_image)  # convert image for tkinter
             test = cv2image
             self.panel.imgtk = imgtk  # anchor imgtk so it does not be deleted by garbage-collector
-            self.panel.config(image=imgtk)  # show the image
-
-        self.root.after(30, self.video_loop)  # call the same function after 30 milliseconds
+            self.panel.config(image=imgtk)  # show the imag
+        self.root.after(1, self.video_loop)  # call the same function after 30 milliseconds
         if flag ==0:
             flag = 1
             #self.show_thumb()
@@ -115,16 +108,20 @@ class Application:
                            
     def enable_buttons(self):
         self.botShoot.configure(state="normal")
-        self.botQuit.configure(state="normal")
+        self.botSave.configure(state="normal")
         
+    #sending the data to the server   
     def save_process(self):
-        myobj = {'first_name' : patient_details[0],'last_name' : patient_details[1],'npid' : patient_details[2]}
-        x = requests.post(url, data = myobj)
-        print(x)      
+        patient_info = {'first_name' : patient_details[0],'middle_name' : patient_details[2],'last_name' : patient_details[2],'npid' : patient_details[3],'dob': patient_details[4], 'gender' : patient_details[5],'gender' : patient_details[6]}
+        x = requests.post(url, data = patient_info)
+        print(x)     
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
-        
+        self.vs.set(cv2.CAP_PROP_FRAME_WIDTH,640)
+        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,250)
         validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
+        invalidYear = "????"
+        invalid_Day_or_Month = "??"
         verified_id = ""
         get_id = ""
         
@@ -139,13 +136,22 @@ class Application:
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
         print(ocr_text)
         ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
+        if not ocr_text_split:
+            print("List Empty")
         print(ocr_text_split)
         ocr_text_splitted = ocr_text_split[0].split("\n")
         print(ocr_text_splitted)
         full_name = ocr_text_splitted[0] #get the full name from first line
         split_full_name = full_name.split(" ")
-        first_name = keep_alphanumerical(split_full_name[0]);   
-        last_name = keep_alphanumerical(split_full_name[1]);
+        if len(split_full_name) < 3:
+            first_name = keep_alphanumerical(split_full_name[0]);
+            middle_name = ""
+            last_name = keep_alphanumerical(split_full_name[1]);      
+        else:
+            first_name = keep_alphanumerical(split_full_name[0]);
+            middle_name = keep_alphanumerical(split_full_name[1]);
+            last_name = keep_alphanumerical(split_full_name[2]);
+               
         print(first_name + " " +last_name)
         
         take_date = ocr_text_splitted[1].split(" ")
@@ -157,7 +163,7 @@ class Application:
             print(verified_id)
         else:
             print("OCR is Poor")
-            #verified_id = 
+            verified_id = id_only
             
         #Processing Date Validation   
         date_taken = take_date[1].split("/")
@@ -168,35 +174,39 @@ class Application:
         YearOfBirth = take_year[0] #Extract Year from date        
         # Validating the Year Captured from OCR
         if "?" in YearOfBirth:
-            YearOfBirth = "????"
+            YearOfBirth = invalidYear
             print(YearOfBirth)        
         else:
             YearOfBirth = int(YearOfBirth)
             if YearOfBirth < 1920 or YearOfBirth > 2025:
-                YearOfBirth = "????"
+                YearOfBirth = invalidYear
                 print(YearOfBirth)         
         # Validating the Month Captured from OCR
         if MonthOfBirth.upper() not in validMonths:
-           MonthOfBirth = "???"
+           MonthOfBirth = invalidYear
         print(MonthOfBirth)     
         # Validating the Day Captured from OCR
         if "?" in DayOfBirth:
-            DayOfBirth = "??"
+            DayOfBirth = invalid_Day_or_Month
             print(DayOfBirth)
         else :
-            DayOfBirth = int (DayOfBirth)
-            if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
-                maxDay=31
-            elif(MonthOfBirth==4 or MonthOfBirth==6 or MonthOfBirth==9 or MonthOfBirth==11):
-                maxDay=30
-            elif(YearOfBirth%4==0 and YearOfBirth%100!=0 or YearOfBirth%400==0):
-                maxDay=29
-            else:
-                maxDay=28
-            if(DayOfBirth<1 or DayOfBirth>maxDay):
-                DayOfBirth = "??"
-                print(DayOfBirth)
-                
+            if YearOfBirth == invalidYear:
+                if MonthOfBirth != invalid_Day_or_Month:
+                    DayOfBirth = int (DayOfBirth)
+                    if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
+                        maxDay=31
+                    elif(MonthOfBirth==4 or MonthOfBirth==6 or MonthOfBirth==9 or MonthOfBirth==11):
+                        maxDay=30
+                    elif(YearOfBirth%4==0 and YearOfBirth%100!=0 or YearOfBirth%400==0):
+                        maxDay=29
+                    else:
+                        maxDay=28
+                    if(DayOfBirth<1 or DayOfBirth>maxDay):
+                        DayOfBirth = invalid_Day_or_Month
+                        print(DayOfBirth)
+                else: DayOfBirth = invalid_Day_or_Month
+            else: DayOfBirth = invalid_Day_or_Month
+                    
         #processing Gender
         gender = keep_alphanumerical(take_year[1].rstrip(")"));
         print(gender)
@@ -209,26 +219,31 @@ class Application:
         home_village  = ocr_text_split[1].split("\n")
         village = keep_alphanumerical(home_village[0]);
         print(village)
+        address = district + ", " + village
         
         #Creating an Array to pass data to Server
         patient_details.append(first_name)
+        patient_details.append(middle_name)
         patient_details.append(last_name)
         patient_details.append(verified_id)
         patient_details.append(str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth)) #Date of Birth
-        patient_details.append(verified_id)
         patient_details.append(gender)
-        patient_details.append(district)
+        patient_details.append(address)
         patient_details.append(village)
-
+        
         print(patient_details)
         #Data to display on user Interface
-        to_display_data = first_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + district + ", " + village
+        to_display_data = first_name + " " + middle_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + address
         print(to_display_data)
         ocr_text_tkinter = tk.StringVar()
         ocr_text_tkinter.set(to_display_data)    
         self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'), bg="light cyan", justify='left')
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
-        
+                
+        #!!Button to be changed to save function soon
+        self.botSave = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
+        self.botSave.grid(row=13,column=18)
+        self.botSave.configure(command=self.save_process)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-o", "--output", default="./Pictures",
