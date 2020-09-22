@@ -9,17 +9,18 @@ import numpy as np
 import cv2
 import os
 import re
+import requests
 import subprocess
 import RPi.GPIO as GPIO
 import threading
 import picamera
 import pytesseract
 
-
+patient_details = []
 bilder = "demo.jpg"
 flag = 0
 delete_flag = 0
-
+url = 'http://192.168.0.134:12000/api/ocr_demographics'
 os.system("sudo modprobe bcm2835-v4l2") # to recognize PiCamera as video0
 
 def keep_alphanumerical(data):
@@ -83,7 +84,7 @@ class Application:
         #!!Button to be changed to save function soon
         self.botQuit = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
         self.botQuit.grid(row=13,column=18)
-        self.botQuit.configure(command=self.destructor)
+        self.botQuit.configure(command=self.save_process)
         
         self.Output = tk.Label(self.root,text = "Insert Health Passport",font=('arial', 25, 'normal'),height = 7, width = 30,bg="light cyan")
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
@@ -116,16 +117,17 @@ class Application:
         self.botShoot.configure(state="normal")
         self.botQuit.configure(state="normal")
         
-    def destructor(self):
-        self.root.destroy()
-        self.vs.release()  # release pi camera
-        cv2.destroyAllWindows()  # it is not mandatory in this application      
+    def save_process(self):
+        myobj = {'first_name' : patient_details[0],'last_name' : patient_details[1],'npid' : patient_details[2]}
+        x = requests.post(url, data = myobj)
+        print(x)      
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
         
         validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
         verified_id = ""
         get_id = ""
+        
         # Find barcode and Decode
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
         for obj in decodedObjects:
@@ -135,8 +137,8 @@ class Application:
         #print(id_only)
         #Extracring OCR Data
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
-        #print(ocr_text)
-        ocr_text_split = ocr_text.split(", ",1) #splitting text with coMonthOfBirtha into two values array
+        print(ocr_text)
+        ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
         print(ocr_text_split)
         ocr_text_splitted = ocr_text_split[0].split("\n")
         print(ocr_text_splitted)
@@ -196,7 +198,7 @@ class Application:
                 print(DayOfBirth)
                 
         #processing Gender
-        gender = take_year[1].rstrip(")")
+        gender = keep_alphanumerical(take_year[1].rstrip(")"));
         print(gender)
         #Start coding from here !!!
         # Process District 
@@ -208,6 +210,17 @@ class Application:
         village = keep_alphanumerical(home_village[0]);
         print(village)
         
+        #Creating an Array to pass data to Server
+        patient_details.append(first_name)
+        patient_details.append(last_name)
+        patient_details.append(verified_id)
+        patient_details.append(str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth)) #Date of Birth
+        patient_details.append(verified_id)
+        patient_details.append(gender)
+        patient_details.append(district)
+        patient_details.append(village)
+
+        print(patient_details)
         #Data to display on user Interface
         to_display_data = first_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + district + ", " + village
         print(to_display_data)
