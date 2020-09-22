@@ -11,6 +11,7 @@ import os
 import re
 import requests
 import subprocess
+import sys
 import RPi.GPIO as GPIO
 import threading
 import picamera
@@ -30,6 +31,10 @@ def keep_alphanumerical(data):
             alphanumeric += character
     return alphanumeric;
 
+def restart_program():
+    """ helps restart program after hitting recapture button without saving data"""
+    python = sys.executable
+    os.execl(python, python, * sys.argv)
 def do_picam(app):
     global toScan
     global shot
@@ -117,8 +122,11 @@ class Application:
         print(x)     
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
+        self.botRestart = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="RE-CAPTURE", activebackground="light blue",bg = "cyan")
+        self.botRestart.grid(row=12, column=18,pady=20)
+        self.botRestart.configure(command=restart_program)   
         self.vs.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,250)
+        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,240)
         validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
         invalidYear = "????"
         invalid_Day_or_Month = "??"
@@ -137,12 +145,16 @@ class Application:
         print(ocr_text)
         ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
         if not ocr_text_split:
-            print("List Empty")
+            print("List not Valid")
         print(ocr_text_split)
         ocr_text_splitted = ocr_text_split[0].split("\n")
+        if not ocr_text_splitted:
+            print("List not Valid")
         print(ocr_text_splitted)
         full_name = ocr_text_splitted[0] #get the full name from first line
         split_full_name = full_name.split(" ")
+        if not split_full_name:
+            print("List not Valid")
         if len(split_full_name) < 3:
             first_name = keep_alphanumerical(split_full_name[0]);
             middle_name = ""
@@ -155,6 +167,8 @@ class Application:
         print(first_name + " " +last_name)
         
         take_date = ocr_text_splitted[1].split(" ")
+        if not take_date:
+            print("List not Valid")
         get_id_ocr = take_date[0].replace("-","") #Getting id from OCR to later compare with one from barcode 
         #checking barcode id and OCR id
         if get_id_ocr == id_only:
@@ -182,8 +196,10 @@ class Application:
                 YearOfBirth = invalidYear
                 print(YearOfBirth)         
         # Validating the Month Captured from OCR
-        if MonthOfBirth.upper() not in validMonths:
+        MonthOfBirth = MonthOfBirth.upper()
+        if MonthOfBirth not in validMonths:
            MonthOfBirth = invalidYear
+           
         print(MonthOfBirth)     
         # Validating the Day Captured from OCR
         if "?" in DayOfBirth:
