@@ -22,6 +22,13 @@ delete_flag = 0
 
 os.system("sudo modprobe bcm2835-v4l2") # to recognize PiCamera as video0
 
+def keep_alphanumerical(data):
+    alphanumeric = ""
+    for character in data:
+        if character.isalnum():
+            alphanumeric += character
+    return alphanumeric;
+
 def do_picam(app):
     global toScan
     global shot
@@ -112,13 +119,13 @@ class Application:
     def destructor(self):
         self.root.destroy()
         self.vs.release()  # release pi camera
-        cv2.destroyAllWindows()  # it is not mandatory in this application
-           
+        cv2.destroyAllWindows()  # it is not mandatory in this application      
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
         
         validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
         verified_id = ""
+        get_id = ""
         # Find barcode and Decode
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
         for obj in decodedObjects:
@@ -135,8 +142,8 @@ class Application:
         print(ocr_text_splitted)
         full_name = ocr_text_splitted[0] #get the full name from first line
         split_full_name = full_name.split(" ")
-        first_name = split_full_name[0]
-        last_name = split_full_name[1]
+        first_name = keep_alphanumerical(split_full_name[0]);   
+        last_name = keep_alphanumerical(split_full_name[1]);
         print(first_name + " " +last_name)
         
         take_date = ocr_text_splitted[1].split(" ")
@@ -148,6 +155,7 @@ class Application:
             print(verified_id)
         else:
             print("OCR is Poor")
+            #verified_id = 
             
         #Processing Date Validation   
         date_taken = take_date[1].split("/")
@@ -192,12 +200,12 @@ class Application:
         print(gender)
         #Start coding from here !!!
         # Process District 
-        district = ocr_text_splitted[2]
+        district = keep_alphanumerical(ocr_text_splitted[2]);
         print(district)
         
         #Process village
         home_village  = ocr_text_split[1].split("\n")
-        village = home_village[0]
+        village = keep_alphanumerical(home_village[0]);
         print(village)
         
         #Data to display on user Interface
@@ -207,6 +215,7 @@ class Application:
         ocr_text_tkinter.set(to_display_data)    
         self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'), bg="light cyan", justify='left')
         self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
+        
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-o", "--output", default="./Pictures",
