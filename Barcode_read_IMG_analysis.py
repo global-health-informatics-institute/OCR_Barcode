@@ -44,7 +44,7 @@ def do_picam(app):
     global txt_display
     camera = picamera.PiCamera()
     camera.brightness = 50
-    camera.resolution = (1296,506) #This resolution works better for barcode decoding
+    camera.resolution = (2592,1012) #This resolution works better for barcode decoding
     camera.color_effects = (128,128) #Turn camera to black and white
     #camera.crop = (0.0,0.0,3.1,0.53) #crop image to take label only  
     camera.capture(bilder)
@@ -81,7 +81,7 @@ class Application:
         self.panel = tk.Label(self.root,width= 800, height=250)  # initialize image panel
         self.panel.grid(row=0,rowspan=10,columnspan = 25,column=0,padx=0, pady=20)
         
-        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE", activebackground="light blue",bg = "cyan")
+        self.botShoot = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="CAPTURE", activebackground="cyan",bg = "cyan")
         self.botShoot.grid(row=12, column=18,pady=20)
         self.botShoot.configure(command=self.picam)        
         
@@ -122,7 +122,7 @@ class Application:
         print(x)     
     #OCR and Decode QR-Code and Barcode (Function under constraction)
     def tesseractAnalysis(self):
-        self.botRestart = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="RE-CAPTURE", activebackground="light blue",bg = "cyan")
+        self.botRestart = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'),  text="RE-CAPTURE", activebackground="cyan",bg = "cyan")
         self.botRestart.grid(row=12, column=18,pady=20)
         self.botRestart.configure(command=restart_program)   
         self.vs.set(cv2.CAP_PROP_FRAME_WIDTH,640)
@@ -139,18 +139,19 @@ class Application:
             get_id = str(obj.data)
         split_get_id = get_id.split("'")
         id_only = split_get_id[1]
-        #print(id_only)
+        print(id_only)
         #Extracring OCR Data
         ocr_text = pytesseract.image_to_string(Image.open(bilder), lang="eng")
         print(ocr_text)
         ocr_text_split = ocr_text.split(", ",1) #splitting text with comma into two values array
         if not ocr_text_split:
-            print("List not Valid")
-        print(ocr_text_split)
+            print("List not Valid")    
         ocr_text_splitted = ocr_text_split[0].split("\n")
         if not ocr_text_splitted:
             print("List not Valid")
         print(ocr_text_splitted)
+        while("" in ocr_text_splitted):
+            ocr_text_splitted.remove("")
         full_name = ocr_text_splitted[0] #get the full name from first line
         split_full_name = full_name.split(" ")
         if not split_full_name:
@@ -169,7 +170,9 @@ class Application:
         take_date = ocr_text_splitted[1].split(" ")
         if not take_date:
             print("List not Valid")
-        get_id_ocr = take_date[0].replace("-","") #Getting id from OCR to later compare with one from barcode 
+        
+        get_id_ocr = take_date[0] #Getting id from OCR to later compare with one from barcode 
+        #print(get_id_ocr)
         #checking barcode id and OCR id
         if get_id_ocr == id_only:
             print("OCR is Okay ")
@@ -181,85 +184,90 @@ class Application:
             
         #Processing Date Validation   
         date_taken = take_date[1].split("/")
-        DayOfBirth = date_taken[0] #Extract Day from date
-        MonthOfBirth = date_taken[1] #Extract Month from date
-        print(date_taken)
-        take_year = date_taken[2].split("(")
-        YearOfBirth = take_year[0] #Extract Year from date        
-        # Validating the Year Captured from OCR
-        if "?" in YearOfBirth:
-            YearOfBirth = invalidYear
-            print(YearOfBirth)        
+        if not date_taken:
+            print("List not Valid")
         else:
-            YearOfBirth = int(YearOfBirth)
-            if YearOfBirth < 1920 or YearOfBirth > 2025:
+            DayOfBirth = date_taken[0] #Extract Day from date
+            MonthOfBirth = date_taken[1] #Extract Month from date
+            print(date_taken)
+            take_year = date_taken[2].split("(")
+            if not take_year:
+                print("List not Valid")
+            YearOfBirth = take_year[0] #Extract Year from date        
+            # Validating the Year Captured from OCR
+            if "?" in YearOfBirth:
                 YearOfBirth = invalidYear
-                print(YearOfBirth)         
-        # Validating the Month Captured from OCR
-        MonthOfBirth = MonthOfBirth.upper()
-        if MonthOfBirth not in validMonths:
-           MonthOfBirth = invalidYear
-           
-        print(MonthOfBirth)     
-        # Validating the Day Captured from OCR
-        if "?" in DayOfBirth:
-            DayOfBirth = invalid_Day_or_Month
-            print(DayOfBirth)
-        else :
-            if YearOfBirth == invalidYear:
-                if MonthOfBirth != invalid_Day_or_Month:
-                    DayOfBirth = int (DayOfBirth)
-                    if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
-                        maxDay=31
-                    elif(MonthOfBirth==4 or MonthOfBirth==6 or MonthOfBirth==9 or MonthOfBirth==11):
-                        maxDay=30
-                    elif(YearOfBirth%4==0 and YearOfBirth%100!=0 or YearOfBirth%400==0):
-                        maxDay=29
-                    else:
-                        maxDay=28
-                    if(DayOfBirth<1 or DayOfBirth>maxDay):
-                        DayOfBirth = invalid_Day_or_Month
-                        print(DayOfBirth)
+                print(YearOfBirth)        
+            else:
+                YearOfBirth = int(YearOfBirth)
+                if YearOfBirth < 1920 or YearOfBirth > 2025:
+                    YearOfBirth = invalidYear
+                    print(YearOfBirth)         
+            # Validating the Month Captured from OCR
+            MonthOfBirth = MonthOfBirth.upper()
+            if MonthOfBirth not in validMonths:
+               MonthOfBirth = invalidYear
+               
+            print(MonthOfBirth)     
+            # Validating the Day Captured from OCR
+            if "?" in DayOfBirth:
+                DayOfBirth = invalid_Day_or_Month
+                print(DayOfBirth)
+            else :
+                if YearOfBirth == invalidYear:
+                    if MonthOfBirth != invalid_Day_or_Month:
+                        DayOfBirth = int (DayOfBirth)
+                        if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
+                            maxDay=31
+                        elif(MonthOfBirth==4 or MonthOfBirth==6 or MonthOfBirth==9 or MonthOfBirth==11):
+                            maxDay=30
+                        elif(YearOfBirth%4==0 and YearOfBirth%100!=0 or YearOfBirth%400==0):
+                            maxDay=29
+                        else:
+                            maxDay=28
+                        if(DayOfBirth<1 or DayOfBirth>maxDay):
+                            DayOfBirth = invalid_Day_or_Month
+                            print(DayOfBirth)
+                    else: DayOfBirth = invalid_Day_or_Month
                 else: DayOfBirth = invalid_Day_or_Month
-            else: DayOfBirth = invalid_Day_or_Month
+                        
+            #processing Gender
+            gender = keep_alphanumerical(take_year[1].rstrip(")"));
+            print(gender)
+            #Start coding from here !!!
+            # Process District 
+            district = ocr_text_splitted[2];
+            print(district)
+            
+            #Process village
+            home_village  = ocr_text_split[1].split("\n")
+            village = keep_alphanumerical(home_village[0]);
+            print(village)
+            address = district + ", " + village
+            
+            #Creating an Array to pass data to Server
+            patient_details.append(first_name)
+            patient_details.append(middle_name)
+            patient_details.append(last_name)
+            patient_details.append(verified_id)
+            patient_details.append(str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth)) #Date of Birth
+            patient_details.append(gender)
+            patient_details.append(address)
+            patient_details.append(village)
+            
+            print(patient_details)
+            #Data to display on user Interface
+            to_display_data = first_name + " " + middle_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + address
+            print(to_display_data)
+            ocr_text_tkinter = tk.StringVar()
+            ocr_text_tkinter.set(to_display_data)    
+            self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'), bg="light cyan", justify='left')
+            self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
                     
-        #processing Gender
-        gender = keep_alphanumerical(take_year[1].rstrip(")"));
-        print(gender)
-        #Start coding from here !!!
-        # Process District 
-        district = keep_alphanumerical(ocr_text_splitted[2]);
-        print(district)
-        
-        #Process village
-        home_village  = ocr_text_split[1].split("\n")
-        village = keep_alphanumerical(home_village[0]);
-        print(village)
-        address = district + ", " + village
-        
-        #Creating an Array to pass data to Server
-        patient_details.append(first_name)
-        patient_details.append(middle_name)
-        patient_details.append(last_name)
-        patient_details.append(verified_id)
-        patient_details.append(str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth)) #Date of Birth
-        patient_details.append(gender)
-        patient_details.append(address)
-        patient_details.append(village)
-        
-        print(patient_details)
-        #Data to display on user Interface
-        to_display_data = first_name + " " + middle_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + address
-        print(to_display_data)
-        ocr_text_tkinter = tk.StringVar()
-        ocr_text_tkinter.set(to_display_data)    
-        self.Output = tk.Label(self.root,textvariable = ocr_text_tkinter,font=('arial', 25, 'normal'), bg="light cyan", justify='left')
-        self.Output.grid(row=12,column=4,rowspan=8,columnspan=1)
-                
-        #!!Button to be changed to save function soon
-        self.botSave = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
-        self.botSave.grid(row=13,column=18)
-        self.botSave.configure(command=self.save_process)
+            #!!Button to be changed to save function soon
+            self.botSave = tk.Button(self.root,width=12,height=4,bd=4,font=('arial', 14, 'bold'), text="SAVE", activebackground="light blue",bg = "light green")
+            self.botSave.grid(row=13,column=18)
+            self.botSave.configure(command=self.save_process)
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-o", "--output", default="./Pictures",
