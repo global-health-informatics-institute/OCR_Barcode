@@ -43,7 +43,7 @@ def do_picam(app):
     global txt_display
     camera = picamera.PiCamera()
     camera.brightness = 50
-    camera.resolution = (1920,720) #This resolution works better for barcode decoding
+    camera.resolution = (1024, 400) # 2592,1020This resolution works better for barcode decoding
     camera.color_effects = (128,128) #Turn camera to black and white
     #camera.crop = (0.0,0.0,3.1,0.53) #crop image to take label only  
     camera.capture(bilder)
@@ -125,7 +125,7 @@ class Application:
         self.botRestart.grid(row=12, column=18,pady=20)
         self.botRestart.configure(command=restart_program)   
         self.vs.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,200)
+        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,260)
         validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
         invalidYear = "????"
         invalid_Day_or_Month = "??"
@@ -136,6 +136,7 @@ class Application:
         decodedObjects = pyzbar.decode(cv2.imread(bilder))
         for obj in decodedObjects:
             get_id = str(obj.data)
+            print(get_id)
         split_get_id = get_id.split("'")
         id_only = split_get_id[1]
         print(id_only)
@@ -180,8 +181,11 @@ class Application:
             print("OCR is Okay ")
         else:
             print("OCR is Poor")
-        #Processing Date Validation   
-        date_taken = take_date[1].split("/")
+        #Processing Date Validation
+        to_date = take_date[1].replace(" ","") #replace whitespcae with no space for date
+        print(to_date)
+        date_taken = to_date.split("/")
+        print(to_date)
         if not date_taken:
             print("List not Valid")
         else:
@@ -231,8 +235,7 @@ class Application:
             #processing Gender
             gender = keep_alphanumerical(take_year[1].rstrip(")"));
             print(gender)
-            #Start coding from here !!!
-            # Process District 
+            #Start coding from here !!!            # Process District 
             district = ocr_text_splitted[2];
             district = re.sub(r'[^A-Za-z0-9 ]+', '', district) #Check alphanumerical and observe any space spaces
             print(district)
