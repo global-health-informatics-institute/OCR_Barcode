@@ -44,7 +44,7 @@ def do_picam(app):
     global txt_display
     camera = picamera.PiCamera()
     camera.brightness = 50
-    camera.resolution = (2592,1012) #This resolution works better for barcode decoding
+    camera.resolution = (1920,720) #This resolution works better for barcode decoding
     camera.color_effects = (128,128) #Turn camera to black and white
     #camera.crop = (0.0,0.0,3.1,0.53) #crop image to take label only  
     camera.capture(bilder)
@@ -126,7 +126,7 @@ class Application:
         self.botRestart.grid(row=12, column=18,pady=20)
         self.botRestart.configure(command=restart_program)   
         self.vs.set(cv2.CAP_PROP_FRAME_WIDTH,640)
-        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,240)
+        self.vs.set(cv2.CAP_PROP_FRAME_HEIGHT,200)
         validMonths = set(['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'])
         invalidYear = "????"
         invalid_Day_or_Month = "??"
@@ -171,17 +171,16 @@ class Application:
         if not take_date:
             print("List not Valid")
         
-        get_id_ocr = take_date[0] #Getting id from OCR to later compare with one from barcode 
+        get_id_ocr = take_date[0].replace("-","") #Getting id from OCR to later compare with one from barcode 
         #print(get_id_ocr)
         #checking barcode id and OCR id
+        new_verified_id = id_only[:5] + '-' + id_only[5:]
+        verified_id = new_verified_id[:10] + '-' + new_verified_id[10:] 
+        
         if get_id_ocr == id_only:
             print("OCR is Okay ")
-            verified_id = take_date[0]
-            print(verified_id)
         else:
             print("OCR is Poor")
-            verified_id = id_only
-            
         #Processing Date Validation   
         date_taken = take_date[1].split("/")
         if not date_taken:
@@ -206,9 +205,8 @@ class Application:
             # Validating the Month Captured from OCR
             MonthOfBirth = MonthOfBirth.upper()
             if MonthOfBirth not in validMonths:
-               MonthOfBirth = invalidYear
-               
-            print(MonthOfBirth)     
+               MonthOfBirth = invalidYear           
+            print(MonthOfBirth)
             # Validating the Day Captured from OCR
             if "?" in DayOfBirth:
                 DayOfBirth = invalid_Day_or_Month
@@ -237,6 +235,7 @@ class Application:
             #Start coding from here !!!
             # Process District 
             district = ocr_text_splitted[2];
+            district = re.sub(r'[^A-Za-z0-9 ]+', '', district) #Check alphanumerical and observe any space spaces
             print(district)
             
             #Process village
@@ -254,7 +253,6 @@ class Application:
             patient_details.append(gender)
             patient_details.append(address)
             patient_details.append(village)
-            
             print(patient_details)
             #Data to display on user Interface
             to_display_data = first_name + " " + middle_name + " " + last_name + "\n" + verified_id + " " + str(DayOfBirth) +"/" + str(MonthOfBirth) +"/" + str(YearOfBirth) +"(" + gender + ")" + "\n" + address
