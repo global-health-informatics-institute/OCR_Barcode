@@ -1,4 +1,3 @@
-
 from __future__ import print_function
 from PIL import Image, ImageTk
 import tkinter as tk
@@ -212,7 +211,7 @@ class Application:
                 DayOfBirth = invalid_Day_or_Month
                 print(DayOfBirth)
             else :
-                if YearOfBirth == invalidYear:
+                if YearOfBirth != invalidYear:
                     if MonthOfBirth != invalid_Day_or_Month:
                         DayOfBirth = int (DayOfBirth)
                         if(MonthOfBirth==1 or MonthOfBirth==3 or MonthOfBirth==5 or MonthOfBirth==7 or MonthOfBirth==8 or MonthOfBirth==10 or MonthOfBirth==12):
